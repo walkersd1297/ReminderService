@@ -50,9 +50,26 @@ const updateNotification = async (ticketId,data)=>{
     }
 }
 
+const subscribeEvents = async(payload)=>{
+    let service = payload.service;
+    let data = payload.data;
+    switch(service){
+        case "CREATE_NOTIFICATION":
+            await createNotification(data);
+            break;
+        case "SEND_EMAIL":
+            await basicEmail(data);
+            break;
+        default:
+            console.log("Invalid service");
+            break;
+    }
+}
+
 module.exports = {
     basicEmail,
     fetchPendingEmails,
     createNotification,
     updateNotification,
+    subscribeEvents
 }

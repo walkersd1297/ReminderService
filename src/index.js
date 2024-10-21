@@ -1,17 +1,19 @@
 const express = require('express');
-const {PORT} = require('./config/serverConfig.js');
-
+const {PORT,REMINDER_BINDING_KEY} = require('./config/serverConfig.js');
 const bodyParser = require('body-parser');
 
-// const {basicEmail} = require('./services/email-service.js');
-const {setupCron} = require('./utils/job.js');
-const ticketController = require('./controllers/ticket-contoller.js');
+const {createChannel,subscribeMessage} = require('./utils/messageQueue.js');
 
-function StartAndSetupServer(){
+const ticketController = require('./controllers/ticket-contoller.js');
+const EmailService = require('./services/email-service.js');
+const StartAndSetupServer = async()=>{
     const app = express();
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({extended:true}));
     app.post('/api/v1/tickets',ticketController.create);
+    
+    const channel = await createChannel();
+    subscribeMessage(channel,EmailService.subscribeEvents,REMINDER_BINDING_KEY);
 
     app.listen(PORT,()=>{
         // basicEmail(
@@ -21,7 +23,7 @@ function StartAndSetupServer(){
         //     'This is a test email'
         // );
 
-        setupCron();
+        // setupCron();
         console.log(`Server is running on port ${PORT}`);
     });
 }
